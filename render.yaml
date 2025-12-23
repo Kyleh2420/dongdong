@@ -1,0 +1,31 @@
+services:
+  # A Docker web service for the FastAPI backend
+  - type: web
+    name: dong-dong-backend
+    runtime: docker
+    repo: https://github.com/your-username/your-repo-name # Replace with your repo URL
+    region: oregon # optional
+    plan: free # optional
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12
+      - key: PORT
+        value: 10000
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    
+  # A static site for the frontend
+  - type: web
+    name: dong-dong-frontend
+    repo: https://github.com/your-username/your-repo-name # Replace with your repo URL
+    region: oregon # optional
+    plan: free # optional
+    staticPublishPath: ./frontend
+    routes:
+      - type: rewrite
+        source: /api/(.*)
+        destination: http://dong-dong-backend:10000/api/$1
+      - type: rewrite
+        source: /*
+        destination: /index.html

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dong Dong Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="lobby-screen">
+        <h2>Dong Dong Online</h2>
+        <div class="lobby-box">
+            <h3>Create a New Game</h3>
+            <p>Get a room code to share with your friends.</p>
+            <label>Your Name: <input type="text" id="create-player-name" value="Player"></label>
+            <button id="create-room-btn">Create Room</button>
+        </div>
+        <div class="lobby-box">
+            <h3>Join an Existing Game</h3>
+            <p>Enter a 4-digit room code from a friend.</p>
+            <label>Your Name: <input type="text" id="join-player-name" value="Player"></label>
+            <label>Room Code: <input type="text" id="room-code-input" maxlength="4" placeholder="1234"></label>
+            <button id="join-room-btn">Join Room</button>
+        </div>
+    </div>
+
+    <div id="game-container" style="display: none;">
+        <header id="game-header">
+            <h1 id="game-title">Dong Dong</h1>
+            <div id="game-info">
+                <p><strong>Round:</strong> <span id="round-number">--</span></p>
+                <p><strong>Master Color:</strong> <span id="master-color">--</span></p>
+            </div>
+            <div id="controls">
+                <button id="start-game-btn" style="display: none;">Start Game</button>
+                <p>Room Code: <strong id="room-code-display"></strong></p>
+            </div>
+        </header>
+
+        <main id="game-board">
+            <div id="players-container">
+                <!-- Player info will be dynamically inserted here -->
+            </div>
+            
+            <div id="spectator-area" style="display: none;">
+                <h4>Spectators</h4>
+                <ul id="spectator-list"></ul>
+            </div>
+
+            <div id="event-log-area" style="display: none;">
+                <h4>Event Log</h4>
+                <ul id="event-log"></ul>
+            </div>
+
+            <div id="trick-area">
+                <h2>Current Trick</h2>
+                <div id="trick-tiles">
+                    <!-- Played tiles will appear here -->
+                </div>
+            </div>
+        </main>
+
+        <footer id="game-footer">
+            <p id="message-bar">Welcome to Dong Dong!</p>
+            <div id="action-area" style="display: none;">
+                <div id="bet-controls">
+                    <input type="number" id="bet-input" min="0">
+                    <button id="submit-bet-btn">Submit Bet</button>
+                </div>
+                 <!-- Player's hand will be injected here by JS -->
+                <div id="hand-area"></div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
