@@ -3,7 +3,7 @@ services:
   - type: web
     name: dong-dong-backend
     runtime: docker
-    repo: https://github.com/your-username/your-repo-name # Replace with your repo URL
+    repo: https://github.com/Kyleh2420/dongdong
     region: oregon # optional
     plan: free # optional
     healthCheckPath: /
@@ -18,7 +18,7 @@ services:
   # A static site for the frontend
   - type: web
     name: dong-dong-frontend
-    repo: https://github.com/your-username/your-repo-name # Replace with your repo URL
+    repo: https://github.com/Kyleh2420/dongdong
     region: oregon # optional
     plan: free # optional
     staticPublishPath: ./frontend

@@ -42,7 +42,7 @@ manager = ConnectionManager()
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://yourdomain.com", "http://localhost:8080"], # Update with your domain
+    allow_origin_regex=r"https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?|https:\/\/dong-dong-frontend\.onrender\.com",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
