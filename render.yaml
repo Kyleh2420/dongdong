@@ -19,7 +19,6 @@ services:
   - type: web
     name: dong-dong-frontend
     repo: https://github.com/Kyleh2420/dongdong
-    plan: free # optional
     staticPublishPath: ./frontend
     runtime: static
     routes:
