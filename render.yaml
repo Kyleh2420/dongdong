@@ -4,7 +4,6 @@ services:
     name: dong-dong-backend
     runtime: docker
     repo: https://github.com/Kyleh2420/dongdong
-    region: oregon # optional
     plan: free # optional
     healthCheckPath: /
     envVars:
@@ -22,9 +21,6 @@ services:
     staticPublishPath: ./frontend
     runtime: static
     routes:
-      - type: rewrite
-        source: /api/(.*)
-        destination: http://dong-dong-backend:10000/api/$1
       - type: rewrite
         source: /*
         destination: /index.html

@@ -1,7 +1,7 @@
 // --- CONFIG ---
-const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-const API_BASE_URL = ""; // Relative path uses the same origin
-const WS_BASE_URL = `${protocol}//${window.location.host}`;
+const IS_PROD = !['localhost', '127.0.0.1'].includes(window.location.hostname);
+const API_BASE_URL = IS_PROD ? "https://dong-dong-backend.onrender.com" : "http://127.0.0.1:8000";
+const WS_BASE_URL = IS_PROD ? "wss://dong-dong-backend.onrender.com" : "ws://127.0.0.1:8000";
 
 // --- DOM ELEMENTS ---
 // Lobby

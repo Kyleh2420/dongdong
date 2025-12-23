@@ -43,7 +43,11 @@ manager = ConnectionManager()
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?|https:\/\/dong-dong-frontend\.onrender\.com",
+    allow_origins=[
+        "https://dong-dong-frontend.onrender.com",
+        "http://localhost:3000",
+        "http://127.0.0.1:8000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
