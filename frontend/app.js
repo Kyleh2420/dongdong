@@ -17,6 +17,7 @@ const gameContainer = document.getElementById("game-container");
 const roomCodeDisplay = document.getElementById("room-code-display");
 const roundNumberEl = document.getElementById("round-number");
 const masterColorEl = document.getElementById("master-color");
+const currentTrickMasterColorEl = document.getElementById("current-trick-master-color");
 const startGameBtn = document.getElementById("start-game-btn");
 const playersContainer = document.getElementById("players-container");
 const spectatorArea = document.getElementById("spectator-area");
@@ -36,8 +37,31 @@ let gameState = {};
 let myPlayerName = "";
 let currentRoomId = "";
 let socket = null;
+let countdownTimer = null;
 
 // --- RENDER FUNCTIONS ---
+function startCountdown() {
+    if (countdownTimer) clearInterval(countdownTimer);
+    let seconds = 5;
+    messageBar.textContent = `Next trick starts in ${seconds}...`;
+    countdownTimer = setInterval(() => {
+        seconds--;
+        if (seconds > 0) {
+            messageBar.textContent = `Next trick starts in ${seconds}...`;
+        } else {
+            clearInterval(countdownTimer);
+            countdownTimer = null;
+            trickTilesContainer.innerHTML = ''; // Clear the trick area
+            cachedTrickPlays = {}; // Clear the cache
+            
+            // Manually update the message bar to the last known game state message
+            // This prevents it from getting stuck on "Next trick starts in 1..."
+            // The next render() call from the server will provide the correct new message.
+            if(gameState && gameState.message) messageBar.textContent = gameState.message;
+        }
+    }, 1000);
+}
+
 function render() {
     if (!gameState || !gameState.gameState) {
         lobbyScreen.style.display = 'flex';
@@ -53,11 +77,16 @@ function render() {
         gameContainer.style.display = 'flex';
     }
     
-    messageBar.textContent = gameState.message;
+    // Don't update message bar if a countdown is active
+    if (!countdownTimer) {
+        messageBar.textContent = gameState.message;
+    }
     roomCodeDisplay.textContent = currentRoomId;
     roundNumberEl.textContent = gameState.currentRound || '--';
     masterColorEl.textContent = gameState.masterColor || '--';
     if(gameState.masterColor) masterColorEl.className = `tile-color-${gameState.masterColor}`;
+    currentTrickMasterColorEl.textContent = gameState.masterColor || '--';
+    if(gameState.masterColor) currentTrickMasterColorEl.className = `tile-color-${gameState.masterColor}`;
 
     // Render Players
     playersContainer.innerHTML = '';
@@ -76,15 +105,13 @@ function render() {
     
     // Render Spectators
     spectatorList.innerHTML = '';
+    spectatorArea.style.display = 'flex'; // Ensure it's always visible
     if (gameState.spectators && gameState.spectators.length > 0) {
-        spectatorArea.style.display = 'block';
         gameState.spectators.forEach(name => {
             const li = document.createElement('li');
             li.textContent = name;
             spectatorList.appendChild(li);
         });
-    } else {
-        spectatorArea.style.display = 'none';
     }
 
     // Render Event Log
@@ -130,7 +157,7 @@ function render() {
     startGameBtn.style.display = 'none';
 
     if (isHost && gameState.gameState === 'LOBBY' && gameState.players.length >= 2) {
-        startGameBtn.style.display = 'block';
+        startGameBtn.style.display = 'block';   
     }
 
     if (myPlayer) {
@@ -185,8 +212,15 @@ function connectWebSocket(roomId, playerName) {
     socket.onmessage = (event) => {
         const message = JSON.parse(event.data);
         if (message.type === 'game_state') {
+            const oldState = gameState.gameState;
             gameState = message.payload;
-            render();
+            
+            render(); // Render first to show the final trick
+
+            // If the round just ended, start the countdown
+            if (oldState !== 'ROUND_OVER' && gameState.gameState === 'ROUND_OVER') {
+                startCountdown();
+            }
         } else if (message.type === 'error') {
             console.error("Received error from server:", message.message);
             alert(`Error: ${message.message}`);

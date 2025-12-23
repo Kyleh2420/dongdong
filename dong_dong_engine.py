@@ -74,6 +74,7 @@ class DongDongEngine:
         
         self.current_trick_plays: Dict[str, Tile] = {}
         self.last_trick_winner_name: str = ""
+        self.last_completed_trick: Dict[str, Tile] = {}
 
     def add_player(self, player_name: str):
         if len(self.players) < 4:
@@ -130,6 +131,9 @@ class DongDongEngine:
         
         for player in self.players:
             player.reset_for_round()
+
+        self.last_completed_trick = {} # Clear the last completed trick for the new round
+
 
         round_deck = self.main_deck.copy()
         random.shuffle(round_deck)
@@ -232,6 +236,7 @@ class DongDongEngine:
         self.message = f"{winner_name} won with {winning_tile}."
         self.log_event(f"🏆 {winner_name} won the trick with {winning_tile}.")
         
+        self.last_completed_trick = self.current_trick_plays.copy() # Store the completed trick
         self.current_trick_plays = {}
         self.secondary_color = None
         self.trick_leader_index = self.players.index(winner_player)
@@ -283,7 +288,11 @@ class DongDongEngine:
             "isHost": self.players and self.players[0].name,
             "currentRound": self.current_round,
             "masterColor": self.master_color.value if self.master_color else None,
-            "currentTrickPlays": {name: tile.to_dict() for name, tile in self.current_trick_plays.items()},
+            "currentTrickPlays": (
+                {name: tile.to_dict() for name, tile in self.last_completed_trick.items()}
+                if self.game_state in [GameState.ROUND_OVER, GameState.TRICK_RESOLVING]
+                else {name: tile.to_dict() for name, tile in self.current_trick_plays.items()}
+            ),
             "bettingInfo": {
                 "isLastPlayer": self.bets_made == len(self.players) - 1 if self.players else False,
                 "forbiddenBet": (self.current_round - sum(p.bet for p in self.players)) if self.players and self.bets_made == len(self.players) - 1 else -1

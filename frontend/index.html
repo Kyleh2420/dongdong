@@ -43,18 +43,23 @@
                 <!-- Player info will be dynamically inserted here -->
             </div>
             
-            <div id="spectator-area" style="display: none;">
-                <h4>Spectators</h4>
-                <ul id="spectator-list"></ul>
-            </div>
+            <div class="side-by-side-container">
+                <div id="spectator-area">
+                    <h4>Spectators</h4>
+                    <ul id="spectator-list"></ul>
+                </div>
 
-            <div id="event-log-area" style="display: none;">
-                <h4>Event Log</h4>
-                <ul id="event-log"></ul>
+                <div id="event-log-area">
+                    <h4>Event Log</h4>
+                    <ul id="event-log"></ul>
+                </div>
             </div>
 
             <div id="trick-area">
                 <h2>Current Trick</h2>
+                <div id="current-trick-master-color-container">
+                    Master Color: <span id="current-trick-master-color">--</span>
+                </div>
                 <div id="trick-tiles">
                     <!-- Played tiles will appear here -->
                 </div>
@@ -69,6 +74,7 @@
                     <button id="submit-bet-btn">Submit Bet</button>
                 </div>
                  <!-- Player's hand will be injected here by JS -->
+                <h3>Your Hand</h3>
                 <div id="hand-area"></div>
             </div>
         </footer>
