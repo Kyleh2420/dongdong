@@ -1,5 +1,6 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 import asyncio
 import json
 import random
@@ -154,3 +155,5 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str, player_name: st
         print(f"An error occurred in room {room_id}: {e}")
         await manager.broadcast(room_id, {"type": "error", "message": str(e)})
 
+# --- Static Files (Must be last) ---
+app.mount("/", StaticFiles(directory="frontend", html=True), name="static")
