@@ -1,7 +1,7 @@
 // --- CONFIG ---
-const IS_PROD = !['localhost', '127.0.0.1'].includes(window.location.hostname);
-const API_BASE_URL = IS_PROD ? "https://api.yourdomain.com" : "http://127.0.0.1:8000";
-const WS_BASE_URL = IS_PROD ? "wss://api.yourdomain.com" : "ws://127.0.0.1:8000";
+const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+const API_BASE_URL = ""; // Relative path uses the same origin
+const WS_BASE_URL = `${protocol}//${window.location.host}`;
 
 // --- DOM ELEMENTS ---
 // Lobby
