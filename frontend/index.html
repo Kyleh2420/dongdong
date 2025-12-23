@@ -10,6 +10,7 @@
 
     <div id="lobby-screen">
         <h2>Dong Dong Online</h2>
+        <button id="show-tutorial-btn">How to Play</button>
         <div class="lobby-box">
             <h3>Create a New Game</h3>
             <p>Get a room code to share with your friends.</p>
@@ -78,6 +79,33 @@
                 <div id="hand-area"></div>
             </div>
         </footer>
+    </div>
+
+    <div id="tutorial-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn" id="close-tutorial-btn">&times;</span>
+            <h2>How to Play Dong Dong</h2>
+            <h3>Objective</h3>
+            <p>The goal is to accurately predict and bid on the number of "tricks" you will win in each round. Points are awarded for correct bids.</p>
+            
+            <h3>Rounds</h3>
+            <p>The game consists of multiple rounds. In each round, players are dealt a number of cards equal to the round number.</p>
+            
+            <h3>Betting</h3>
+            <p>At the start of each round, players place a bet on how many tricks they believe they will win. The total number of bets from all players cannot equal the round number.</p>
+            
+            <h3>Gameplay</h3>
+            <ul>
+                <li><strong>Master Color:</strong> A "Master Color" is chosen for each trick. This is the trump color.</li>
+                <li><strong>Leading a Trick:</strong> The first player of a trick sets the "lead color".</li>
+                <li><strong>Following Suit:</strong> Other players must play a card of the same color if they have one. If not, they can play any card.</li>
+                <li><strong>Winning a Trick:</strong> The trick is won by the player who played the highest card of the Master Color. If no Master Color cards were played, the highest card of the lead color wins.</li>
+            </ul>
+
+            <h3>Scoring</h3>
+            <p>If your bet matches the number of tricks you won, you get <strong>10 + (your bet)^2</strong> points.</p>
+            <p>If your bet is incorrect, you lose <strong>(your bet - tricks won)^2</strong> points.</p>
+        </div>
     </div>
 
     <script src="app.js"></script>

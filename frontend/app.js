@@ -12,6 +12,12 @@ const joinPlayerNameInput = document.getElementById("join-player-name");
 const roomCodeInput = document.getElementById("room-code-input");
 const joinRoomBtn = document.getElementById("join-room-btn");
 
+// Tutorial
+const showTutorialBtn = document.getElementById("show-tutorial-btn");
+const tutorialModal = document.getElementById("tutorial-modal");
+const closeTutorialBtn = document.getElementById("close-tutorial-btn");
+
+
 // Game
 const gameContainer = document.getElementById("game-container");
 const roomCodeDisplay = document.getElementById("room-code-display");
@@ -282,6 +288,19 @@ function init() {
     joinRoomBtn.addEventListener("click", handleJoinRoom);
     startGameBtn.addEventListener("click", () => sendSocketMessage({ action: 'start_game' }));
     submitBetBtn.addEventListener("click", handleSubmitBet);
+
+    // Tutorial listeners
+    showTutorialBtn.addEventListener("click", () => {
+        tutorialModal.style.display = "flex";
+    });
+    closeTutorialBtn.addEventListener("click", () => {
+        tutorialModal.style.display = "none";
+    });
+    window.addEventListener("click", (event) => {
+        if (event.target == tutorialModal) {
+            tutorialModal.style.display = "none";
+        }
+    });
     
     render();
 }
