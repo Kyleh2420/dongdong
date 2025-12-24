@@ -108,7 +108,16 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str, player_name: st
     engine = game_sessions[room_id]
     
     # Handle player joining logic
-    if engine.game_state == GameState.LOBBY and len(engine.players) < 4:
+    player_to_rejoin = None
+    # Check if the player was an original player and is marked as disconnected
+    if player_name in engine.original_players:
+        player_to_rejoin = next((p for p in engine.players if p.name == player_name and p.disconnected), None)
+
+    if player_to_rejoin:
+        player_to_rejoin.disconnected = False
+        engine.log_event(f"🔌 {player_name} reconnected.")
+        engine.message = f"{player_name} reconnected."
+    elif engine.game_state == GameState.LOBBY and len(engine.players) < 4:
         if any(p.name == player_name for p in engine.players):
              await websocket.close(code=4001, reason="Name already taken")
              manager.disconnect(websocket, room_id)
@@ -153,7 +162,7 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str, player_name: st
 
     except WebSocketDisconnect:
         manager.disconnect(websocket, room_id)
-        engine.remove_player_or_spectator(player_name)
+        engine.handle_disconnect(player_name)
         print(f"{player_name} disconnected from room {room_id}")
         await broadcast_gamestate(room_id)
     except Exception as e:

@@ -8,7 +8,7 @@ The game has been upgraded to a full multiplayer version with game rooms! Here i
 2.  Run the following command to start the FastAPI server. This server will manage game rooms and real-time communication.
 
     ```bash
-    python -m uvicorn main:app --reload
+    python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     ```
 
 3.  You should see output indicating that the server is running on `http://127.0.0.1:8000`. Keep this terminal open while you are playing.

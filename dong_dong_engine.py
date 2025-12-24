@@ -25,6 +25,7 @@ class Player:
     score: int = 0
     bet: int = 0
     tricks_won: int = 0
+    disconnected: bool = False
 
     def to_dict(self):
         return {
@@ -33,6 +34,7 @@ class Player:
             "score": self.score,
             "bet": self.bet,
             "tricks_won": self.tricks_won,
+            "disconnected": self.disconnected,
         }
     
     def reset_for_round(self):
@@ -54,6 +56,7 @@ class GameState(Enum):
 class DongDongEngine:
     def __init__(self):
         self.players: List[Player] = []
+        self.original_players: List[str] = []
         self.spectators: List[str] = []
         self.event_log: List[str] = ["Lobby created. Waiting for players..."]
         
@@ -86,17 +89,20 @@ class DongDongEngine:
         self.spectators.append(spectator_name)
         self.event_log.append(f"➡️ {spectator_name} started spectating.")
     
-    def remove_player_or_spectator(self, name: str):
-        was_player = any(p.name == name for p in self.players)
-        self.players = [p for p in self.players if p.name != name]
-        self.spectators = [s for s in self.spectators if s != name]
-        
-        self.message = f"{name} left the game."
-        self.event_log.append(f"⬅️ {name} left the game.")
+    def handle_disconnect(self, name: str):
+        player = next((p for p in self.players if p.name == name), None)
+        if player:
+            player.disconnected = True
+            self.event_log.append(f"🔌 {name} disconnected.")
+            self.message = f"{name} disconnected."
+        else:
+            self.spectators = [s for s in self.spectators if s != name]
+            self.event_log.append(f"⬅️ Spectator {name} left.")
+            self.message = f"Spectator {name} left."
 
-        if self.game_state != GameState.LOBBY and not self.players:
+        if self.game_state != GameState.LOBBY and all(p.disconnected for p in self.players):
              self.game_state = GameState.LOBBY
-             self.event_log.append("All players left. Game has returned to the lobby.")
+             self.event_log.append("All players disconnected. Game has returned to the lobby.")
 
     def log_event(self, event: str):
         self.event_log.append(event)
@@ -111,6 +117,7 @@ class DongDongEngine:
             self.message = "Need at least 2 players to start a game."
             return
 
+        self.original_players = [p.name for p in self.players]
         self.log_event(f"🏁 Game started by {self.players[0].name} with {len(self.players)} players.")
         self.current_round = 0
         self.color_master_player_index = 0
