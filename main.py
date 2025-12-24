@@ -1,13 +1,28 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.requests import Request
 import asyncio
 import json
 import random
 import string
+import os
+import logging
 from typing import Dict, List, Tuple
 
 from dong_dong_engine import DongDongEngine, GameState
+
+# --- Logging Setup ---
+LOGS_DIR = "Logs"
+if not os.path.exists(LOGS_DIR):
+    os.makedirs(LOGS_DIR)
+
+# General application logger
+app_logger = logging.getLogger("app_logger")
+app_logger.setLevel(logging.INFO)
+app_handler = logging.FileHandler(os.path.join(LOGS_DIR, "app.log"), encoding="utf-8")
+app_handler.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
+app_logger.addHandler(app_handler)
 
 # --- In-Memory Storage ---
 
@@ -48,13 +63,33 @@ app.add_middleware(
         "http://localhost:3000",
         "http://localhost:8000",
         "http://127.0.0.1:8000",
+        "https://dongdong.avocadotoast.kylehan.org",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """Middleware to log all incoming HTTP requests."""
+    app_logger.info(f"Request: {request.method} {request.url} - From: {request.client.host}")
+    response = await call_next(request)
+    return response
+
 # --- Helper Functions ---
+
+def setup_room_logger(room_id: str) -> logging.Logger:
+    """Creates a dedicated logger for a game room."""
+    logger = logging.getLogger(f"room_{room_id}")
+    logger.setLevel(logging.INFO)
+    # Prevent duplicate handlers if function is called multiple times for the same room
+    if not logger.handlers:
+        handler = logging.FileHandler(os.path.join(LOGS_DIR, f"game_{room_id}.log"), encoding="utf-8")
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+    return logger
 
 def generate_room_id():
     """Generates a unique 4-digit room ID."""
@@ -78,7 +113,9 @@ async def broadcast_gamestate(room_id: str):
 async def create_room():
     """Creates a new game room and returns its ID."""
     room_id = generate_room_id()
-    game_sessions[room_id] = DongDongEngine()
+    logger = setup_room_logger(room_id)
+    game_sessions[room_id] = DongDongEngine(logger=logger)
+    logger.info(f"New room created with ID: {room_id}")
     return {"room_id": room_id}
 
 @app.get("/room/exists/{room_id}")
@@ -151,15 +188,16 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str, player_name: st
             elif action == "place_bet":
                 amount = payload.get("amount")
                 success, error = engine.place_bet(player_name, amount)
-                if not success and error == "FORBIDDEN_BET":
-                    engine.log_event(f"🚫 {player_name} tried to bet {amount}, but it's not allowed.")
-                elif not success:
-                    print(f"Bet error for {player_name}: {error}")
+                if not success:
+                    engine.logger.warning(f"Bet error for {player_name}: {error}")
+                    if error == "FORBIDDEN_BET": # Also log this specific case to engine log
+                        engine.log_event(f"🚫 {player_name} tried to bet {amount}, but it's not allowed.")
+
 
             elif action == "play_tile":
                 success, error = engine.play_tile(player_name, payload.get("tile"))
                 if not success:
-                    print(f"Play error for {player_name}: {error}")
+                    engine.logger.warning(f"Play error for {player_name}: {error}")
             
             await broadcast_gamestate(room_id)
 
@@ -170,10 +208,10 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str, player_name: st
     except WebSocketDisconnect:
         manager.disconnect(websocket, room_id)
         engine.handle_disconnect(player_name)
-        print(f"{player_name} disconnected from room {room_id}")
+        engine.logger.info(f"{player_name} disconnected from room {room_id}")
         await broadcast_gamestate(room_id)
     except Exception as e:
-        print(f"An error occurred in room {room_id}: {e}")
+        engine.logger.error(f"An error occurred in room {room_id}: {e}", exc_info=True)
         await manager.broadcast(room_id, {"type": "error", "message": str(e)})
 
 # --- Static Files (Must be last) ---

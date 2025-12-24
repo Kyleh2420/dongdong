@@ -1,0 +1,24 @@
+2025-12-24 04:25:06,513 - INFO - Lobby created. Waiting for players...
+2025-12-24 04:25:06,513 - INFO - New room created with ID: 8369
+2025-12-24 04:25:48,659 - INFO - Bidding starts with Player.
+2025-12-24 04:25:59,726 - INFO - All bets are in. The first stack begins.
+2025-12-24 04:26:01,683 - INFO - Player played [Blue 8].
+2025-12-24 04:26:02,845 - INFO - Player2 played [Red 12].
+2025-12-24 04:26:02,851 - INFO - --- Scoring ---
+2025-12-24 04:26:02,851 - INFO -   Player bet 0, won 0. Correct! (+10 points).
+2025-12-24 04:26:02,851 - INFO -   Player2 bet 0, won 1. Incorrect. (-1 points).
+2025-12-24 04:26:02,851 - INFO - Round Over.
+2025-12-24 04:26:07,847 - INFO - Bidding starts with Player2.
+2025-12-24 04:26:21,491 - INFO - All bets are in. The first stack begins.
+2025-12-24 04:26:23,264 - INFO - Player2 played [Orange 9].
+2025-12-24 04:26:24,474 - INFO - Player played [Black 9].
+2025-12-24 04:26:25,734 - INFO - Player2 played [Black 11].
+2025-12-24 04:26:27,060 - INFO - Player played [Blue 12].
+2025-12-24 04:26:27,066 - INFO - --- Scoring ---
+2025-12-24 04:26:27,066 - INFO -   Player bet 0, won 0. Correct! (+10 points).
+2025-12-24 04:26:27,066 - INFO -   Player2 bet 0, won 2. Incorrect. (-4 points).
+2025-12-24 04:26:27,066 - INFO - Round Over.
+2025-12-24 04:26:32,069 - INFO - Bidding starts with Player.
+2025-12-24 04:27:35,474 - INFO - Player2 disconnected from room 8369
+2025-12-24 04:27:35,484 - INFO - All players disconnected. Game has returned to the lobby.
+2025-12-24 04:27:35,485 - INFO - Player disconnected from room 8369

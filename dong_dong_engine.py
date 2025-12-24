@@ -2,6 +2,7 @@ import random
 from enum import Enum
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Tuple
+from logging import Logger
 
 # --- Data Structures ---
 
@@ -54,11 +55,14 @@ class GameState(Enum):
     GAME_OVER = "GAME_OVER"
 
 class DongDongEngine:
-    def __init__(self):
+    def __init__(self, logger: Optional[Logger] = None):
         self.players: List[Player] = []
         self.original_players: List[str] = []
         self.spectators: List[str] = []
-        self.event_log: List[str] = ["Lobby created. Waiting for players..."]
+        self.logger = logger
+        
+        self.event_log: List[str] = []
+        self.log_event("Lobby created. Waiting for players...")
         
         self.main_deck = self._create_deck()
         self.color_chooser_deck = [Tile(1, c) for c in Color]
@@ -83,28 +87,30 @@ class DongDongEngine:
         if len(self.players) < 4:
             self.players.append(Player(name=player_name))
             self.message = f"{player_name} joined the game. Waiting for more players..."
-            self.event_log.append(f"➡️ {player_name} joined as a player.")
+            self.log_event(f"➡️ {player_name} joined as a player.")
 
     def add_spectator(self, spectator_name: str):
         self.spectators.append(spectator_name)
-        self.event_log.append(f"➡️ {spectator_name} started spectating.")
+        self.log_event(f"➡️ {spectator_name} started spectating.")
     
     def handle_disconnect(self, name: str):
         player = next((p for p in self.players if p.name == name), None)
         if player:
             player.disconnected = True
-            self.event_log.append(f"🔌 {name} disconnected.")
+            self.log_event(f"🔌 {name} disconnected.")
             self.message = f"{name} disconnected."
         else:
             self.spectators = [s for s in self.spectators if s != name]
-            self.event_log.append(f"⬅️ Spectator {name} left.")
+            self.log_event(f"⬅️ Spectator {name} left.")
             self.message = f"Spectator {name} left."
 
         if self.game_state != GameState.LOBBY and all(p.disconnected for p in self.players):
              self.game_state = GameState.LOBBY
-             self.event_log.append("All players disconnected. Game has returned to the lobby.")
+             self.log_event("All players disconnected. Game has returned to the lobby.")
 
     def log_event(self, event: str):
+        if self.logger:
+            self.logger.info(event)
         self.event_log.append(event)
         if len(self.event_log) > 100: # Prevent log from getting too large
             self.event_log.pop(0)
