@@ -26,13 +26,13 @@ const gameContainer = document.getElementById("game-container");
 const roomCodeDisplay = document.getElementById("room-code-display");
 const roundNumberEl = document.getElementById("round-number");
 const masterColorEl = document.getElementById("master-color");
-const currentTrickMasterColorEl = document.getElementById("current-trick-master-color");
+const currentStackMasterColorEl = document.getElementById("current-stack-master-color");
 const playersContainer = document.getElementById("players-container");
 const spectatorArea = document.getElementById("spectator-area");
 const spectatorList = document.getElementById("spectator-list");
 const eventLogArea = document.getElementById("event-log-area");
 const eventLog = document.getElementById("event-log");
-const trickTilesContainer = document.getElementById("trick-tiles");
+const stackTilesContainer = document.getElementById("stack-tiles");
 const messageBar = document.getElementById("message-bar");
 const actionArea = document.getElementById("action-area");
 const betControls = document.getElementById("bet-controls");
@@ -64,19 +64,19 @@ function showNotification(message) {
 function startCountdown() {
     if (countdownTimer) clearInterval(countdownTimer);
     let seconds = 5;
-    messageBar.textContent = `Next trick starts in ${seconds}...`;
+    messageBar.textContent = `Next stack starts in ${seconds}...`;
     countdownTimer = setInterval(() => {
         seconds--;
         if (seconds > 0) {
-            messageBar.textContent = `Next trick starts in ${seconds}...`;
+            messageBar.textContent = `Next stack starts in ${seconds}...`;
         } else {
             clearInterval(countdownTimer);
             countdownTimer = null;
-            trickTilesContainer.innerHTML = ''; // Clear the trick area
-            cachedTrickPlays = {}; // Clear the cache
+            stackTilesContainer.innerHTML = ''; // Clear the stack area
+            cachedStackPlays = {}; // Clear the cache
             
             // Manually update the message bar to the last known game state message
-            // This prevents it from getting stuck on "Next trick starts in 1..."
+            // This prevents it from getting stuck on "Next stack starts in 1..."
             // The next render() call from the server will provide the correct new message.
             if(gameState && gameState.message) messageBar.textContent = gameState.message;
         }
@@ -106,8 +106,8 @@ function render() {
     roundNumberEl.textContent = gameState.currentRound || '--';
     masterColorEl.textContent = gameState.masterColor || '--';
     if(gameState.masterColor) masterColorEl.className = `tile-color-${gameState.masterColor}`;
-    currentTrickMasterColorEl.textContent = gameState.masterColor || '--';
-    if(gameState.masterColor) currentTrickMasterColorEl.className = `tile-color-${gameState.masterColor}`;
+    currentStackMasterColorEl.textContent = gameState.masterColor || '--';
+    if(gameState.masterColor) currentStackMasterColorEl.className = `tile-color-${gameState.masterColor}`;
 
     // Render Players
     playersContainer.innerHTML = '';
@@ -119,7 +119,7 @@ function render() {
             <h3>${player.name} ${player.name === myPlayerName ? "(You)" : ""}</h3>
             <p><strong>Score:</strong> ${player.score}</p>
             <p><strong>Bet:</strong> ${player.bet}</p>
-            <p><strong>Tricks Won:</strong> ${player.tricks_won}</p>
+            <p><strong>Stacks Won:</strong> ${player.stacks_won}</p>
         `;
         playersContainer.appendChild(playerBox);
     });
@@ -149,12 +149,12 @@ function render() {
         eventLogArea.style.display = 'none';
     }
 
-    // Render Current Trick
-    trickTilesContainer.innerHTML = '';
+    // Render Current Stack
+    stackTilesContainer.innerHTML = '';
     const playedOrder = gameState.players.map(p => p.name);
     playedOrder.forEach(playerName => {
-        if (gameState.currentTrickPlays[playerName]) {
-            const tileData = gameState.currentTrickPlays[playerName];
+        if (gameState.currentStackPlays[playerName]) {
+            const tileData = gameState.currentStackPlays[playerName];
             const tileWrapper = document.createElement('div');
             tileWrapper.className = 'played-tile-wrapper';
             const tileEl = createTileElement(tileData);
@@ -163,7 +163,7 @@ function render() {
             playerNameEl.textContent = playerName;
             tileWrapper.appendChild(tileEl);
             tileWrapper.appendChild(playerNameEl);
-            trickTilesContainer.appendChild(tileWrapper);
+            stackTilesContainer.appendChild(tileWrapper);
         }
     });
 
@@ -241,7 +241,7 @@ function connectWebSocket(roomId, playerName) {
             const oldState = gameState.gameState;
             gameState = message.payload;
             
-            render(); // Render first to show the final trick
+            render(); // Render first to show the final stack
 
             // If the round just ended, start the countdown
             if (oldState !== 'ROUND_OVER' && gameState.gameState === 'ROUND_OVER') {

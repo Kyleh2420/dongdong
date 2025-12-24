@@ -197,13 +197,13 @@ body {
     padding-bottom: 5px;
 }
 
-#trick-area {
+#stack-area {
     background: #0003;
     border-radius: 8px;
     padding: 15px;
     min-height: 150px;
 }
-#trick-tiles {
+#stack-tiles {
     display: flex;
     gap: 10px;
     justify-content: center;

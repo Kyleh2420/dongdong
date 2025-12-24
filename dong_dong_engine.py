@@ -24,7 +24,7 @@ class Player:
     hand: List[Tile] = field(default_factory=list)
     score: int = 0
     bet: int = 0
-    tricks_won: int = 0
+    stacks_won: int = 0
     disconnected: bool = False
 
     def to_dict(self):
@@ -33,14 +33,14 @@ class Player:
             "hand": sorted([t.to_dict() for t in self.hand], key=lambda x: (x['color'], x['number'])),
             "score": self.score,
             "bet": self.bet,
-            "tricks_won": self.tricks_won,
+            "stacks_won": self.stacks_won,
             "disconnected": self.disconnected,
         }
     
     def reset_for_round(self):
         self.hand = []
         self.bet = 0
-        self.tricks_won = 0
+        self.stacks_won = 0
 
 # --- Game State and Engine ---
 
@@ -49,7 +49,7 @@ class GameState(Enum):
     ROUND_STARTING = "ROUND_STARTING"
     AWAITING_BETS = "AWAITING_BETS"
     AWAITING_PLAY = "AWAITING_PLAY"
-    TRICK_RESOLVING = "TRICK_RESOLVING"
+    STACK_RESOLVING = "STACK_RESOLVING"
     ROUND_OVER = "ROUND_OVER"
     GAME_OVER = "GAME_OVER"
 
@@ -72,12 +72,12 @@ class DongDongEngine:
         
         self.color_master_player_index: int = 0
         self.turn_player_index: int = 0
-        self.trick_leader_index: int = 0
+        self.stack_leader_index: int = 0
         self.bets_made: int = 0
         
-        self.current_trick_plays: Dict[str, Tile] = {}
-        self.last_trick_winner_name: str = ""
-        self.last_completed_trick: Dict[str, Tile] = {}
+        self.current_stack_plays: Dict[str, Tile] = {}
+        self.last_stack_winner_name: str = ""
+        self.last_completed_stack: Dict[str, Tile] = {}
 
     def add_player(self, player_name: str):
         if len(self.players) < 4:
@@ -139,7 +139,7 @@ class DongDongEngine:
         for player in self.players:
             player.reset_for_round()
 
-        self.last_completed_trick = {} # Clear the last completed trick for the new round
+        self.last_completed_stack = {} # Clear the last completed stack for the new round
 
 
         round_deck = self.main_deck.copy()
@@ -153,7 +153,7 @@ class DongDongEngine:
         self.master_color = random.choice(self.color_chooser_deck).color
         self.log_event(f"👑 Master Color is {self.master_color.value}.")
         
-        self.trick_leader_index = self.color_master_player_index
+        self.stack_leader_index = self.color_master_player_index
         self.turn_player_index = self.color_master_player_index
         self.bets_made = 0
         
@@ -186,9 +186,9 @@ class DongDongEngine:
 
         if self.bets_made == len(self.players):
             self.game_state = GameState.AWAITING_PLAY
-            self.turn_player_index = self.trick_leader_index
+            self.turn_player_index = self.stack_leader_index
             self.message = f"All bets are in. {self.get_current_turn_player().name} starts."
-            self.log_event("All bets are in. The first trick begins.")
+            self.log_event("All bets are in. The first stack begins.")
         else:
             self.message = f"{next_player.name} to bet."
         
@@ -208,13 +208,13 @@ class DongDongEngine:
         valid_plays = self.get_valid_plays_for_player(turn_player)
         if tile_to_play not in valid_plays: return False, f"Invalid move. Must play {self.secondary_color.value}."
 
-        if not self.current_trick_plays: 
+        if not self.current_stack_plays: 
             self.secondary_color = tile_to_play.color
-            self.log_event(f"♦️ Trick started. Lead color is {self.secondary_color.value}.")
+            self.log_event(f"♦️ Stack started. Lead color is {self.secondary_color.value}.")
 
 
         turn_player.hand.remove(tile_to_play)
-        self.current_trick_plays[turn_player.name] = tile_to_play
+        self.current_stack_plays[turn_player.name] = tile_to_play
         self.log_event(f"{player_name} played {tile_to_play}.")
 
         self.turn_player_index = (self.turn_player_index + 1) % len(self.players)
@@ -222,8 +222,8 @@ class DongDongEngine:
         next_player = self.get_current_turn_player()
         if next_player: self.message = f"{next_player.name} to play."
 
-        if len(self.current_trick_plays) == len(self.players):
-            self.resolve_trick()
+        if len(self.current_stack_plays) == len(self.players):
+            self.resolve_stack()
         
         return True, ""
 
@@ -232,22 +232,22 @@ class DongDongEngine:
         valid_plays = [t for t in player.hand if t.color == self.secondary_color]
         return valid_plays if valid_plays else player.hand
 
-    def resolve_trick(self):
-        self.game_state = GameState.TRICK_RESOLVING
+    def resolve_stack(self):
+        self.game_state = GameState.STACK_RESOLVING
         
-        winner_name, winning_tile = self._determine_trick_winner()
+        winner_name, winning_tile = self._determine_stack_winner()
         winner_player = next(p for p in self.players if p.name == winner_name)
-        winner_player.tricks_won += 1
-        self.last_trick_winner_name = winner_name
+        winner_player.stacks_won += 1
+        self.last_stack_winner_name = winner_name
         
         self.message = f"{winner_name} won with {winning_tile}."
-        self.log_event(f"🏆 {winner_name} won the trick with {winning_tile}.")
+        self.log_event(f"🏆 {winner_name} won the stack with {winning_tile}.")
         
-        self.last_completed_trick = self.current_trick_plays.copy() # Store the completed trick
-        self.current_trick_plays = {}
+        self.last_completed_stack = self.current_stack_plays.copy() # Store the completed stack
+        self.current_stack_plays = {}
         self.secondary_color = None
-        self.trick_leader_index = self.players.index(winner_player)
-        self.turn_player_index = self.trick_leader_index
+        self.stack_leader_index = self.players.index(winner_player)
+        self.turn_player_index = self.stack_leader_index
 
         if all(len(p.hand) == 0 for p in self.players):
             self._calculate_scores()
@@ -259,28 +259,28 @@ class DongDongEngine:
             self.game_state = GameState.AWAITING_PLAY
             self.message += f" {winner_name} leads next."
 
-    def _determine_trick_winner(self) -> Tuple[str, Tile]:
-        master_plays = {name: t for name, t in self.current_trick_plays.items() if t.color == self.master_color}
+    def _determine_stack_winner(self) -> Tuple[str, Tile]:
+        master_plays = {name: t for name, t in self.current_stack_plays.items() if t.color == self.master_color}
         if master_plays:
             winner_name = max(master_plays, key=lambda name: master_plays[name].number)
             return winner_name, master_plays[winner_name]
 
-        secondary_plays = {name: t for name, t in self.current_trick_plays.items() if t.color == self.secondary_color}
+        secondary_plays = {name: t for name, t in self.current_stack_plays.items() if t.color == self.secondary_color}
         if secondary_plays:
             winner_name = max(secondary_plays, key=lambda name: secondary_plays[name].number)
             return winner_name, secondary_plays[winner_name]
 
-        leader_name = self.players[self.trick_leader_index].name
-        return leader_name, self.current_trick_plays[leader_name]
+        leader_name = self.players[self.stack_leader_index].name
+        return leader_name, self.current_stack_plays[leader_name]
 
     def _calculate_scores(self):
         self.log_event("--- Scoring ---")
         for player in self.players:
-            points = 10 + (player.bet ** 2) if player.bet == player.tricks_won else -((player.bet - player.tricks_won) ** 2)
+            points = 10 + (player.bet ** 2) if player.bet == player.stacks_won else -((player.bet - player.stacks_won) ** 2)
             player.score += points
             result = "Correct!" if points > 0 else "Incorrect."
             sign = "+" if points > 0 else ""
-            self.log_event(f"  {player.name} bet {player.bet}, won {player.tricks_won}. {result} ({sign}{points} points).")
+            self.log_event(f"  {player.name} bet {player.bet}, won {player.stacks_won}. {result} ({sign}{points} points).")
             
     def get_state_for_frontend(self) -> dict:
         """Returns a JSON-serializable representation of the current game state."""
@@ -295,10 +295,10 @@ class DongDongEngine:
             "isHost": self.players and self.players[0].name,
             "currentRound": self.current_round,
             "masterColor": self.master_color.value if self.master_color else None,
-            "currentTrickPlays": (
-                {name: tile.to_dict() for name, tile in self.last_completed_trick.items()}
-                if self.game_state in [GameState.ROUND_OVER, GameState.TRICK_RESOLVING]
-                else {name: tile.to_dict() for name, tile in self.current_trick_plays.items()}
+            "currentStackPlays": (
+                {name: tile.to_dict() for name, tile in self.last_completed_stack.items()}
+                if self.game_state in [GameState.ROUND_OVER, GameState.STACK_RESOLVING]
+                else {name: tile.to_dict() for name, tile in self.current_stack_plays.items()}
             ),
             "bettingInfo": {
                 "isLastPlayer": self.bets_made == len(self.players) - 1 if self.players else False,
