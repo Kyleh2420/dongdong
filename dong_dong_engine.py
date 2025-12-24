@@ -295,6 +295,7 @@ class DongDongEngine:
             "isHost": self.players and self.players[0].name,
             "currentRound": self.current_round,
             "masterColor": self.master_color.value if self.master_color else None,
+            "secondaryColor": self.secondary_color.value if self.secondary_color else None,
             "currentStackPlays": (
                 {name: tile.to_dict() for name, tile in self.last_completed_stack.items()}
                 if self.game_state in [GameState.ROUND_OVER, GameState.STACK_RESOLVING]

@@ -17,6 +17,9 @@ const showTutorialBtn = document.getElementById("show-tutorial-btn");
 const tutorialModal = document.getElementById("tutorial-modal");
 const closeTutorialBtn = document.getElementById("close-tutorial-btn");
 
+// Spectator Toggle
+const toggleSpectatorsBtn = document.getElementById("toggle-spectators-btn");
+
 // Notification
 const notificationContainer = document.getElementById("notification-container");
 
@@ -25,8 +28,9 @@ const notificationContainer = document.getElementById("notification-container");
 const gameContainer = document.getElementById("game-container");
 const roomCodeDisplay = document.getElementById("room-code-display");
 const roundNumberEl = document.getElementById("round-number");
-const masterColorEl = document.getElementById("master-color");
+const playerNameDisplayEl = document.getElementById("player-name-display");
 const currentStackMasterColorEl = document.getElementById("current-stack-master-color");
+const currentStackLeadColorEl = document.getElementById("current-stack-lead-color");
 const playersContainer = document.getElementById("players-container");
 const spectatorArea = document.getElementById("spectator-area");
 const spectatorList = document.getElementById("spectator-list");
@@ -47,6 +51,9 @@ let currentRoomId = "";
 let socket = null;
 let countdownTimer = null;
 let notificationTimeout = null;
+
+// --- HELPERS ---
+const isMobile = () => window.innerWidth <= 768;
 
 // --- RENDER FUNCTIONS ---
 function showNotification(message) {
@@ -103,11 +110,14 @@ function render() {
         messageBar.textContent = gameState.message;
     }
     roomCodeDisplay.textContent = currentRoomId;
+    playerNameDisplayEl.textContent = myPlayerName;
     roundNumberEl.textContent = gameState.currentRound || '--';
-    masterColorEl.textContent = gameState.masterColor || '--';
-    if(gameState.masterColor) masterColorEl.className = `tile-color-${gameState.masterColor}`;
+    
     currentStackMasterColorEl.textContent = gameState.masterColor || '--';
     if(gameState.masterColor) currentStackMasterColorEl.className = `tile-color-${gameState.masterColor}`;
+    
+    currentStackLeadColorEl.textContent = gameState.secondaryColor || '--';
+    if(gameState.secondaryColor) currentStackLeadColorEl.className = `tile-color-${gameState.secondaryColor}`;
 
     // Render Players
     playersContainer.innerHTML = '';
@@ -115,12 +125,23 @@ function render() {
         const playerBox = document.createElement('div');
         playerBox.className = 'player-box';
         if (player.name === gameState.turnPlayerName) playerBox.classList.add('active-turn');
-        playerBox.innerHTML = `
-            <h3>${player.name} ${player.name === myPlayerName ? "(You)" : ""}</h3>
-            <p><strong>Score:</strong> ${player.score}</p>
-            <p><strong>Bet:</strong> ${player.bet}</p>
-            <p><strong>Stacks Won:</strong> ${player.stacks_won}</p>
-        `;
+
+        if (isMobile()) {
+            const truncatedName = player.name.length > 5 ? player.name.substring(0, 5) + '…' : player.name;
+            playerBox.innerHTML = `
+                <span class="player-name-mobile">${truncatedName}</span>
+                <span><strong>S:</strong> ${player.score}</span>
+                <span><strong>B:</strong> ${player.bet}</span>
+                <span><strong>W:</strong> ${player.stacks_won}</span>
+            `;
+        } else {
+            playerBox.innerHTML = `
+                <h3>${player.name} ${player.name === myPlayerName ? "(You)" : ""}</h3>
+                <p><strong>Score:</strong> ${player.score}</p>
+                <p><strong>Bet:</strong> ${player.bet}</p>
+                <p><strong>Stacks Won:</strong> ${player.stacks_won}</p>
+            `;
+        }
         playersContainer.appendChild(playerBox);
     });
     
@@ -151,9 +172,8 @@ function render() {
 
     // Render Current Stack
     stackTilesContainer.innerHTML = '';
-    const playedOrder = gameState.players.map(p => p.name);
-    playedOrder.forEach(playerName => {
-        if (gameState.currentStackPlays[playerName]) {
+    for (const playerName in gameState.currentStackPlays) {
+        if (Object.hasOwnProperty.call(gameState.currentStackPlays, playerName)) {
             const tileData = gameState.currentStackPlays[playerName];
             const tileWrapper = document.createElement('div');
             tileWrapper.className = 'played-tile-wrapper';
@@ -165,7 +185,7 @@ function render() {
             tileWrapper.appendChild(playerNameEl);
             stackTilesContainer.appendChild(tileWrapper);
         }
-    });
+    }
 
     // Render Controls and Action Area
     const myPlayer = gameState.players.find(p => p.name === myPlayerName);
@@ -337,6 +357,13 @@ function init() {
         if (event.target == tutorialModal) {
             tutorialModal.style.display = "none";
         }
+    });
+
+    // Spectator toggle listener
+    toggleSpectatorsBtn.addEventListener("click", () => {
+        spectatorArea.classList.toggle("visible");
+        const isVisible = spectatorArea.classList.contains("visible");
+        toggleSpectatorsBtn.textContent = isVisible ? "Hide Spectators" : "Show Spectators";
     });
     
     render();

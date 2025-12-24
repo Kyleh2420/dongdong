@@ -33,7 +33,7 @@
             <h1 id="game-title">Dong Dong</h1>
             <div id="game-info">
                 <p><strong>Round:</strong> <span id="round-number">--</span></p>
-                <p><strong>Master Color:</strong> <span id="master-color">--</span></p>
+                <p><strong>Player:</strong> <span id="player-name-display">--</span></p>
             </div>
             <div id="controls">
                 <button id="start-game-btn" style="display: none;">Start Game</button>
@@ -47,6 +47,7 @@
             </div>
             
             <div class="side-by-side-container">
+                <button id="toggle-spectators-btn">Show Spectators</button>
                 <div id="spectator-area">
                     <h4>Spectators</h4>
                     <ul id="spectator-list"></ul>
@@ -59,9 +60,10 @@
             </div>
 
             <div id="stack-area">
-                <h2>Current Stack</h2>
-                <div id="current-stack-master-color-container">
-                    Master Color: <span id="current-stack-master-color">--</span>
+                <div class="stack-header">
+                    <div class="stack-header-title"><strong>Current Stack</strong></div>
+                    <div id="stack-header-master">Master Color: <span id="current-stack-master-color">--</span></div>
+                    <div id="stack-header-lead">Lead Color: <span id="current-stack-lead-color">--</span></div>
                 </div>
                 <div id="stack-tiles">
                     <!-- Played tiles will appear here -->
@@ -89,19 +91,20 @@
             <h2>How to Play Dong Dong</h2>
             <h3>Objective</h3>
             <p>The goal is to accurately predict and bid on the number of "stacks" you will win in each round. Points are awarded for correct bids.</p>
+            <p>This game is to be played with 4 players. The deck consists of 52 tiles, 4 suites (colors) of tiles 1 though 13. </p>
             
             <h3>Rounds</h3>
-            <p>The game consists of multiple rounds. In each round, players are dealt a number of cards equal to the round number.</p>
+            <p>In each round, players are dealt a number of tiles equal to the round number. There is a maximum of 13 rounds.</p>
             
             <h3>Betting</h3>
             <p>At the start of each round, players place a bet on how many stacks they believe they will win. The total number of bets from all players cannot equal the round number.</p>
             
             <h3>Gameplay</h3>
             <ul>
-                <li><strong>Master Color:</strong> A "Master Color" is chosen for each stack. This is the trump color.</li>
+                <li><strong>Master Color:</strong> A "Master Color" is chosen for each stack. This is the color that will trump all others for that round. </li>
                 <li><strong>Leading a Stack:</strong> The first player of a stack sets the "lead color".</li>
-                <li><strong>Following Suit:</strong> Other players must play a card of the same color if they have one. If not, they can play any card.</li>
-                <li><strong>Winning a Stack:</strong> The stack is won by the player who played the highest card of the Master Color. If no Master Color cards were played, the highest card of the lead color wins.</li>
+                <li><strong>Following Suit:</strong> Other players must play a tile of the same color if they have one. If not, they can play any tile.</li>
+                <li><strong>Winning a Stack:</strong> The stack is won by the player who played the highest lead color tile, unless trumped by a master color tile. In this case, the highest master color tile wins. </li>
             </ul>
 
             <h3>Scoring</h3>
