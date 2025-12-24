@@ -103,9 +103,15 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str, player_name: st
         await websocket.close(code=4000, reason="Room not found")
         return
         
-    await manager.connect(websocket, room_id)
-    
     engine = game_sessions[room_id]
+
+    # Check if an active player already has the same name
+    if any(p.name == player_name and not p.disconnected for p in engine.players):
+        await websocket.accept() # Accept and then immediately close with a reason
+        await websocket.close(code=4001, reason="Name is already taken by an active player.")
+        return
+
+    await manager.connect(websocket, room_id)
     
     # Handle player joining logic
     player_to_rejoin = None
@@ -118,6 +124,7 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str, player_name: st
         engine.log_event(f"🔌 {player_name} reconnected.")
         engine.message = f"{player_name} reconnected."
     elif engine.game_state == GameState.LOBBY and len(engine.players) < 4:
+        # This check is now somewhat redundant due to the check above, but it's good for robustness
         if any(p.name == player_name for p in engine.players):
              await websocket.close(code=4001, reason="Name already taken")
              manager.disconnect(websocket, room_id)

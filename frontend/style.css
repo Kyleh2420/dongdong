@@ -271,6 +271,29 @@ body {
 }
 .played-tile-wrapper .player-name { font-weight: bold; }
 
+/* New styles for the prominent Start Game button */
+#start-game-btn.start-game-tile-button {
+    width: 120px; /* Double the width of a regular tile */
+    height: 180px; /* Double the height of a regular tile */
+    border-radius: 12px; /* Double the border-radius */
+    font-size: 2.5em; /* Larger font size */
+    background-color: var(--board-bg); /* Use a prominent color, e.g., the board background */
+    color: var(--tile-text-light);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5); /* More pronounced shadow */
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex; /* Use flexbox to center text */
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+#start-game-btn.start-game-tile-button:hover {
+    transform: translateY(-8px); /* Lift on hover */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+}
+
 /* --- Tutorial Styles --- */
 
 #show-tutorial-btn {
@@ -332,3 +355,26 @@ body {
     cursor: pointer;
 }
 
+/* --- Notification Styles --- */
+#notification-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--tile-red); /* A nice red for errors */
+    color: var(--tile-text-light);
+    text-align: center;
+    padding: 15px;
+    font-size: 1.1em;
+    font-weight: bold;
+    z-index: 200;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    transform: translateY(0);
+    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+    opacity: 1;
+}
+
+#notification-container.hidden {
+    transform: translateY(-100%);
+    opacity: 0;
+}

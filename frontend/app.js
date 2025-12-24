@@ -17,6 +17,9 @@ const showTutorialBtn = document.getElementById("show-tutorial-btn");
 const tutorialModal = document.getElementById("tutorial-modal");
 const closeTutorialBtn = document.getElementById("close-tutorial-btn");
 
+// Notification
+const notificationContainer = document.getElementById("notification-container");
+
 
 // Game
 const gameContainer = document.getElementById("game-container");
@@ -24,7 +27,6 @@ const roomCodeDisplay = document.getElementById("room-code-display");
 const roundNumberEl = document.getElementById("round-number");
 const masterColorEl = document.getElementById("master-color");
 const currentTrickMasterColorEl = document.getElementById("current-trick-master-color");
-const startGameBtn = document.getElementById("start-game-btn");
 const playersContainer = document.getElementById("players-container");
 const spectatorArea = document.getElementById("spectator-area");
 const spectatorList = document.getElementById("spectator-list");
@@ -44,8 +46,21 @@ let myPlayerName = "";
 let currentRoomId = "";
 let socket = null;
 let countdownTimer = null;
+let notificationTimeout = null;
 
 // --- RENDER FUNCTIONS ---
+function showNotification(message) {
+    if (notificationTimeout) {
+        clearTimeout(notificationTimeout);
+    }
+    notificationContainer.textContent = message;
+    notificationContainer.classList.remove('hidden');
+
+    notificationTimeout = setTimeout(() => {
+        notificationContainer.classList.add('hidden');
+    }, 5000);
+}
+
 function startCountdown() {
     if (countdownTimer) clearInterval(countdownTimer);
     let seconds = 5;
@@ -160,10 +175,15 @@ function render() {
     actionArea.style.display = 'none';
     betControls.style.display = 'none';
     handArea.innerHTML = '';
-    startGameBtn.style.display = 'none';
 
     if (isHost && gameState.gameState === 'LOBBY' && gameState.players.length >= 2) {
-        startGameBtn.style.display = 'block';   
+        const startGameBtn = document.createElement('button');
+        startGameBtn.id = 'start-game-btn';
+        startGameBtn.className = 'start-game-tile-button';
+        startGameBtn.textContent = 'Start Game';
+        startGameBtn.onclick = () => sendSocketMessage({ action: 'start_game' });
+        handArea.appendChild(startGameBtn);
+        actionArea.style.display = 'block';
     }
 
     if (myPlayer) {
@@ -229,13 +249,20 @@ function connectWebSocket(roomId, playerName) {
             }
         } else if (message.type === 'error') {
             console.error("Received error from server:", message.message);
-            alert(`Error: ${message.message}`);
+            showNotification(`Error: ${message.message}`);
         }
     };
 
     socket.onclose = (event) => {
-        console.log("WebSocket connection closed:", event.reason);
-        messageBar.textContent = `Disconnected: ${event.reason || "Connection closed"}. Please refresh to start a new game.`;
+        console.log("WebSocket connection closed:", event.reason, "with code", event.code);
+
+        // Show a specific alert for known error codes from the server
+        if (event.code === 4000 || event.code === 4001) {
+            showNotification(`Connection failed: ${event.reason}`);
+        }
+
+        // Reset the UI and state
+        messageBar.textContent = `Disconnected. Please refresh to start a new game.`;
         currentRoomId = "";
         myPlayerName = "";
         gameState = {};
@@ -251,26 +278,37 @@ function connectWebSocket(roomId, playerName) {
 // --- EVENT HANDLERS ---
 async function handleCreateRoom() {
     const playerName = createPlayerNameInput.value.trim();
-    if (!playerName) { alert("Please enter your name."); return; }
+    if (!playerName) {
+        showNotification("Please enter your name.");
+        return;
+    }
     try {
         const response = await fetch(`${API_BASE_URL}/room/new`, { method: "POST" });
         const data = await response.json();
         if (data.room_id) connectWebSocket(data.room_id, playerName);
     } catch (error) {
         console.error("Failed to create room:", error);
-        alert("Error creating room.");
+        showNotification("Error creating room.");
     }
 }
 
 async function handleJoinRoom() {
     const playerName = joinPlayerNameInput.value.trim();
     const roomId = roomCodeInput.value.trim();
-    if (!playerName || !roomId) { alert("Please enter your name and a room code."); return; }
+    if (!playerName || !roomId) {
+        showNotification("Please enter your name and a room code.");
+        return;
+    }
     try {
-        await fetch(`${API_BASE_URL}/room/exists/${roomId}`);
+        const response = await fetch(`${API_BASE_URL}/room/exists/${roomId}`);
+        if (!response.ok) {
+            // Assuming a 404 response means the room doesn't exist
+            showNotification(`Error: Room ${roomId} not found.`);
+            return;
+        }
         connectWebSocket(roomId, playerName);
     } catch (error) {
-         alert(`Error: Room ${roomId} not found.`);
+         showNotification(`Error: Room ${roomId} not found or server is unreachable.`);
     }
 }
 
@@ -286,7 +324,6 @@ function handleSubmitBet() {
 function init() {
     createRoomBtn.addEventListener("click", handleCreateRoom);
     joinRoomBtn.addEventListener("click", handleJoinRoom);
-    startGameBtn.addEventListener("click", () => sendSocketMessage({ action: 'start_game' }));
     submitBetBtn.addEventListener("click", handleSubmitBet);
 
     // Tutorial listeners
@@ -306,3 +343,4 @@ function init() {
 }
 
 init();
+
