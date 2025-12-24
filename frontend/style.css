@@ -462,36 +462,44 @@ body {
         font-size: 0.9em;
     }
 
-    #game-board {
-        padding: 10px;
-        gap: 15px;
-    }
-
     /* Player box mobile styles */
     #players-container {
         display: flex;
         flex-wrap: nowrap;
         overflow-x: auto; /* Enable horizontal scrolling */
-        gap: 10px;
-        padding-bottom: 10px; /* Space for scrollbar */
+        gap: 5px; /* Reduced gap */
+        padding: 5px 10px; /* Adjusted padding */
         -ms-overflow-style: none;  /* IE and Edge */
         scrollbar-width: none;  /* Firefox */
+
+        position: sticky; /* Stick to the top when scrolling */
+        top: 0;
+        z-index: 10; /* Ensure it stays on top */
+        background-color: var(--board-bg); /* Background to cover content below */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3); /* Subtle shadow */
     }
     #players-container::-webkit-scrollbar {
         display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
     }
 
+    #game-board {
+        padding: 10px;
+        gap: 15px;
+        /* No padding-top needed for sticky positioning */
+    }
+
+
     .player-box {
         flex: 0 0 auto; /* Prevent shrinking/growing */
         display: flex;
-        flex-direction: column;
-        gap: 5px;
-        padding: 8px;
-        font-size: 0.8em;
+        flex-direction: row; /* Make content appear on a single line */
+        justify-content: space-around; /* Distribute space evenly */
+        align-items: center;
+        gap: 2px; /* Smaller gap between items */
+        padding: 5px 8px; /* Compact padding */
+        font-size: 0.7em; /* Smaller font size */
         width: auto;
         min-width: 120px; /* Minimum width for readability */
-        justify-content: center;
-        align-items: center;
     }
 
     .player-box.active-turn {

@@ -147,7 +147,6 @@ function render() {
     
     // Render Spectators
     spectatorList.innerHTML = '';
-    spectatorArea.style.display = 'flex'; // Ensure it's always visible
     if (gameState.spectators && gameState.spectators.length > 0) {
         gameState.spectators.forEach(name => {
             const li = document.createElement('li');
