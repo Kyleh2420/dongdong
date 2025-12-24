@@ -6,3 +6,9 @@
 2025-12-24 04:25:23,337 - Request: POST http://127.0.0.1:8000/room/new - From: 127.0.0.1
 2025-12-24 04:27:52,616 - Request: POST http://127.0.0.1:8000/room/new - From: 127.0.0.1
 2025-12-24 04:28:03,494 - Request: GET http://127.0.0.1:8000/room/exists/1991 - From: 127.0.0.1
+2025-12-24 04:31:07,894 - Request: GET http://localhost:8000/ - From: 127.0.0.1
+2025-12-24 04:31:08,183 - Request: GET http://localhost:8000/style.css - From: 127.0.0.1
+2025-12-24 04:31:08,183 - Request: GET http://localhost:8000/app.js - From: 127.0.0.1
+2025-12-24 04:31:08,508 - Request: GET http://localhost:8000/ - From: 127.0.0.1
+2025-12-24 04:31:09,022 - Request: GET http://localhost:8000/ - From: 127.0.0.1
+2025-12-24 04:31:19,166 - Request: POST http://127.0.0.1:8000/room/new - From: 127.0.0.1

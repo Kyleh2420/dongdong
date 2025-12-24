@@ -2,3 +2,7 @@
 2025-12-24 04:27:52,621 - INFO - New room created with ID: 1991
 2025-12-24 04:27:52,628 - INFO - ➡️ Player joined as a player.
 2025-12-24 04:28:03,501 - INFO - ➡️ Player2 joined as a player.
+2025-12-24 04:31:08,167 - INFO - 🔌 Player disconnected.
+2025-12-24 04:31:08,167 - INFO - Player disconnected from room 1991
+2025-12-24 04:31:08,520 - INFO - 🔌 Player2 disconnected.
+2025-12-24 04:31:08,521 - INFO - Player2 disconnected from room 1991

@@ -1,7 +1,28 @@
 // --- CONFIG ---
-const IS_PROD = !['localhost', '127.0.0.1'].includes(window.location.hostname);
-const API_BASE_URL = IS_PROD ? "https://dong-dong-backend.onrender.com" : "http://127.0.0.1:8000";
-const WS_BASE_URL = IS_PROD ? "wss://dong-dong-backend.onrender.com" : "ws://127.0.0.1:8000";
+const getBackendUrls = (hostname) => {
+    const backends = {
+        // The original production environment
+        "dong-dong-frontend.onrender.com": {
+            api: "https://dong-dong-backend.onrender.com",
+            ws: "wss://dong-dong-backend.onrender.com"
+        },
+        // The new production environment
+        "dongdong.avocadotoast.kylehan.org": {
+            api: "https://dongdong.avocadotoast.kylehan.org",
+            ws: "wss://dongdong.avocadotoast.kylehan.org"
+        }
+    };
+
+    // Default to local development if hostname is not in the map
+    return backends[hostname] || {
+        api: "http://127.0.0.1:8000",
+        ws: "ws://127.0.0.1:8000"
+    };
+};
+
+const urls = getBackendUrls(window.location.hostname);
+const API_BASE_URL = urls.api;
+const WS_BASE_URL = urls.ws;
 
 // --- DOM ELEMENTS ---
 // Lobby
